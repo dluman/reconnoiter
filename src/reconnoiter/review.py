@@ -12,6 +12,8 @@ class IssueEvaluation:
             fulfilled = text.count("- [x]")
             unfulfilled = text.count("- [ ]")
             self.eval = fulfilled / (unfulfilled + fulfilled) * 2
+        else:
+            self.text = ""
 
 class CodeReview:
     
@@ -21,6 +23,9 @@ class CodeReview:
             self.g = Github(auth = auth)
             self.repo = self.g.get_repo(repo)
             self.__get_issue(user)
+        else:
+            self.text = ""
+            self.eval = 0
     
     def __get_issue(self, user: str = ""):
         try:
@@ -29,5 +34,6 @@ class CodeReview:
             print("[ERROR] No code review for {user}")
         for issue in issues:
             if issue.title == "Code Review":
+                self.text = issue._body.value
                 self.eval = IssueEvaluation(issue._body.value).eval
                 
