@@ -112,7 +112,7 @@ def main():
         code_review = CodeReview(f"{org_name}/{assign}", student)
         code_review_review = agent.evaluate_review(code_review.text)
         feedback["review"] = {
-            "score": float(code_review.eval),
+            "score": round(float(code_review.eval),1),
             "feedback": code_review_review['eval']
         }
         # Write an assessment of the code review
