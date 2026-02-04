@@ -52,7 +52,7 @@ def write_feedback(path, feedback, student) -> None:
         fh.write("|Category | Score |\n")
         fh.write("|:--------|:------|\n")
         fh.write(f"|Programming|{feedback['programming']}|\n")
-        fh.write(f"|Writing|{round(feedback['writing']['score'],1)}|\n")
+        fh.write(f"|Writing|{feedback['writing']['score']}|\n")
         fh.write(f"|Code Review|{feedback['review']['score']}|\n\n")
         fh.write("## Writing Feedback\n\n")
         fh.write(f"{feedback['writing']['eval']}\n\n")
@@ -102,10 +102,17 @@ def main():
         # Send the summary to the agent to evaluate
         feedback = {}
         feedback["writing"] = agent.evaluate_writing(Path(path, "docs/summary.md"))
-        # Rly? Have to int(float())?
-        feedback["writing"]["score"] = int(float(feedback["writing"]["score"]))
+        # Rly? Have to int(float())? Makes sense to round it from decimal,
+        # else, everyone gets a 0!
+        feedback["writing"]["score"] = int(
+            round(
+                float(
+                    feedback["writing"]["score"]
+                )
+            , 1)
+        )
         # Integrate programming into feedback scores
-        feedback["programming"] = float(programming_score)
+        feedback["programming"] = round(float(programming_score), 1)
         # Integrate code review into feedback scores
         code_review = CodeReview(f"{org_name}/{assign}", student)
         code_review_review = agent.evaluate_review(code_review.text)
