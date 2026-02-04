@@ -47,8 +47,17 @@ def read_grader(path: str = "") -> int:
 
 def write_feedback(path, feedback, student) -> None:
     assign = student or str(path).split("-")[-1]
-    with open(f"feedback/{assign}.json", "w") as fh:
-        json.dump(feedback, fh)
+    with open(f"feedback/{assign}.md", "w") as fh:
+        fh.write("# Assignment Feedback\n\n")
+        fh.write("|Category | Score |\n")
+        fh.write("|:--------|:------|\n")
+        fh.write(f"|Programming|{feedback['programming']}|\n")
+        fh.write(f"|Writing|{round(feedback['writing']['score'],1)}|\n")
+        fh.write(f"|Code Review|{feedback['review']['score']}|\n\n")
+        fh.write("## Writing Feedback\n\n")
+        fh.write(f"{feedback['writing']['eval']}\n\n")
+        fh.write("## Code Review Feedback\n\n")
+        fh.write(f"{feedback['review']['feedback']}")
 
 def main():
     agent = Agent(os.getenv("RECONNOITER"))
@@ -91,16 +100,18 @@ def main():
             f"feedback/grade_reports/{student}_grader.json"
         )
         # Send the summary to the agent to evaluate
-
-        feedback = agent.evaluate_writing(Path(path, "docs/summary.md"))
+        feedback = {}
+        feedback["writing"] = agent.evaluate_writing(Path(path, "docs/summary.md"))
+        # Rly? Have to int(float())?
+        feedback["writing"]["score"] = int(float(feedback["writing"]["score"]))
         # Integrate programming into feedback scores
-        feedback["programming"] = programming_score
+        feedback["programming"] = float(programming_score)
         # Integrate code review into feedback scores
         code_review = CodeReview(f"{org_name}/{assign}", student)
         code_review_review = agent.evaluate_review(code_review.text)
-        feedback["code_review"] = {
-            "score": code_review.eval,
-            "feedback": code_review_review
+        feedback["review"] = {
+            "score": float(code_review.eval),
+            "feedback": code_review_review['eval']
         }
         # Write an assessment of the code review
 
