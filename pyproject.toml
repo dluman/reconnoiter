@@ -8,7 +8,9 @@ version = "0.0.1"
 requires-python= ">=3.10"
 dependencies = [
     "arglite",
+    "anthropic",
     "pytest",
+    "pygithub",
     "gatorgrade",
     "GitPython",
     "requests",
