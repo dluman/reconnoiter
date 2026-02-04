@@ -104,13 +104,8 @@ def main():
         feedback["writing"] = agent.evaluate_writing(Path(path, "docs/summary.md"))
         # Rly? Have to int(float())? Makes sense to round it from decimal,
         # else, everyone gets a 0!
-        feedback["writing"]["score"] = int(
-            round(
-                float(
-                    feedback["writing"]["score"]
-                )
-            , 1)
-        )
+        pct_write_score = float(feedback["writing"]["score"])
+        feedback["writing"]["score"] = 1 if pct_write_score >= .5 else 0
         # Integrate programming into feedback scores
         feedback["programming"] = round(float(programming_score), 1)
         # Integrate code review into feedback scores
