@@ -16,14 +16,14 @@ class Agent:
         except FileNotFoundError:
             print("[ERROR] Cannot file rubric file; won't process writing.")
 
-    def __message(self, report_file: str = "", review: str = ""):
+    def __writing_message(self, report_text: str = "", review: str = ""):
         response = self.client.messages.create(
             model = "claude-sonnet-4-5-20250929",
             max_tokens = 1024,
             system = self.__prompt() or review,
             messages = [
                 {"role": "user",
-                 "content": report_file
+                 "content": report_text
                 }
             ],
             output_config = {
@@ -43,6 +43,32 @@ class Agent:
         )
         return json.loads(response.content[-1].text)
     
+    def __review_message(self, report_file: str = "", review: str = ""):
+        response = self.client.messages.create(
+            model = "claude-sonnet-4-5-20250929",
+            max_tokens = 1024,
+            system = review,
+            messages = [
+                {"role": "user",
+                 "content": report_file
+                }
+            ],
+            output_config = {
+                "format" : {
+                    "type": "json_schema",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "eval": {"type" : "string"}
+                        },
+                        "required": ["eval"],
+                        "additionalProperties": False
+                    }
+                }
+            }
+        )
+        return json.loads(response.content[-1].text)
+    
     def __writing(self, report_file: str = None) -> str:
         if not report_file:
             return
@@ -51,7 +77,7 @@ class Agent:
     
     def evaluate_writing(self, report_file: str = None) -> dict:
         writing = self.__writing(report_file)
-        response = self.__message(writing)
+        response = self.__writing_message(writing)
         return response
     
     def evaluate_review(self, contents: str = None) -> dict:
@@ -65,5 +91,7 @@ class Agent:
 
             Do so in Markdown bullet points organized by headings.
         """
-        response = self.__message(contents, review)
+        if len(contents) < 10:
+            return {"eval": "This requirement is incomplete."}
+        response = self.__review_message(contents, review)
         return response
