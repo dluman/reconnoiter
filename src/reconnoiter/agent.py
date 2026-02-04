@@ -3,6 +3,8 @@ from anthropic import Anthropic
 
 from pathlib import Path
 
+# As they say...DRY
+
 class Agent:
 
     def __init__(self, key: str = None):

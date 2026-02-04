@@ -60,6 +60,7 @@ def write_feedback(path, feedback, student) -> None:
         fh.write(f"{feedback['review']['feedback']}")
 
 def main():
+    # Look at this illerate mess of a driver function
     agent = Agent(os.getenv("RECONNOITER"))
     assign_name = cliarg.optional.assignment
     org_name = cliarg.required.org

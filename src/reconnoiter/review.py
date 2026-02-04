@@ -10,6 +10,8 @@ class IssueEvaluation:
     def __init__(self, text: str = ""):
         self.eval = 0
         if text:
+            # It really can't be this easy.
+            # I mean, with issue templates, it is.
             fulfilled = text.count("- [x]")
             unfulfilled = text.count("- [ ]")
             self.eval = fulfilled / (unfulfilled + fulfilled) * 2
@@ -18,6 +20,7 @@ class CodeReview:
     
     def __init__(self, repo: str = None, user: str = None):
         self.text = ""
+        self.eval = 0
         if repo and user:
             auth = Auth.Token(os.getenv('GITHUB'))
             self.g = Github(auth = auth)
