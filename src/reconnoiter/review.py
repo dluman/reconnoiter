@@ -8,24 +8,21 @@ from github import UnknownObjectException
 class IssueEvaluation:
 
     def __init__(self, text: str = ""):
+        self.eval = 0
         if text:
             fulfilled = text.count("- [x]")
             unfulfilled = text.count("- [ ]")
             self.eval = fulfilled / (unfulfilled + fulfilled) * 2
-        else:
-            self.text = ""
 
 class CodeReview:
     
     def __init__(self, repo: str = None, user: str = None):
+        self.text = ""
         if repo and user:
             auth = Auth.Token(os.getenv('GITHUB'))
             self.g = Github(auth = auth)
             self.repo = self.g.get_repo(repo)
             self.__get_issue(user)
-        else:
-            self.text = ""
-            self.eval = 0
     
     def __get_issue(self, user: str = ""):
         try:

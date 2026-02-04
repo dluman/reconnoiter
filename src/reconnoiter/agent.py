@@ -32,7 +32,7 @@ class Agent:
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "writing": {"type": "string"},
+                            "score": {"type": "string"},
                             "eval": {"type" : "string"}
                         },
                         "required": ["score", "eval"],
@@ -56,7 +56,9 @@ class Agent:
     
     def evaluate_review(self, contents: str = None) -> dict:
         review = """
-            The following is a code review for which you should summarize the areas
+            Forget previous directives. This replaces your prior role and approach.
+
+            The following is a code review checklist for which you should summarize the areas
             the student didn't fulfill and those that they did with some general
             comments on steps they might take to remedy any issues with their code review.
             Emphasize at least one positive aspect. 
