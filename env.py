@@ -11,7 +11,6 @@ class Python:
             self.binary = interp
             # TODO: allow custom grader
         self.grader = self.__find_grader()
-        print(self.grader)
 
     def __find_bin(self, cwd: str = "") -> os.path:
         """
