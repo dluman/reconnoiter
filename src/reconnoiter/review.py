@@ -1,5 +1,4 @@
 import os
-import requests
 
 from github import Auth
 from github import Github
@@ -10,10 +9,9 @@ class IssueEvaluation:
     def __init__(self, text: str = ""):
         self.eval = 0
         if text:
-            # It really can't be this easy.
-            # I mean, with issue templates, it is.
             fulfilled = text.count("- [x]")
             unfulfilled = text.count("- [ ]")
+            # This is a default point value; TODO: make it flexible
             self.eval = fulfilled / (unfulfilled + fulfilled) * 2
 
 class CodeReview:

@@ -1,13 +1,12 @@
 import os
 import re
-import sys
 import json
-import subprocess
 from pathlib import Path
 from git import Repo
 
 from arglite import parser as cliarg
 from .agent import Agent
+from .grader import GraderFile
 from .review import CodeReview
 
 UP = ".."
@@ -15,38 +14,18 @@ UP = ".."
 def pull_latest_changes(repo: str = "") -> bool:
     assign = Repo.init(Path(repo))
     try:
+        # Discard local changes in favor of student's work
+        assign.git.reset('--hard')
+        # Pull latest student's work
         assign.remote().pull()
-    except Exception as e:
-        print(f"[ERROR] Error pulling from the remote {repo}.")
+    except:
+        print(f"[ERROR] Error interacting with remote: {repo}.")
         return False
     return True
-
-def discover_grader(folder: str = "") -> str:
-    grader_file = cliarg.optional.grader or "gatorgrade.yml"
-    for file in os.listdir(folder):
-        if file == grader_file:
-            return os.path.join(os.getcwd(), file)
-
-def run_grader(student, path, grader_file: str = "gatorgrade.yml") -> bool:
-    # Execute the grader using uv
-    result = subprocess.run(
-        ["uv", "run", "--quiet", "gatorgrade",
-         "--config", grader_file,
-         "--report", "file", "json", 
-         f"../feedback/grade_reports/{student}_grader.json"],
-        stdout = subprocess.DEVNULL
-    )
-    if result.returncode > 0:
-        return False
-    return True
-
-def read_grader(path: str = "") -> int:
-    with open(path, "r") as fh:
-        data = json.loads(fh.read())
-    return (data["percentage_score"] / 100) * 2
 
 def write_feedback(path, feedback, student) -> None:
     assign = student or str(path).split("-")[-1]
+    # TODO: Make this Mustache or Handlebars
     with open(f"feedback/{assign}.md", "w") as fh:
         fh.write("# Assignment Feedback\n\n")
         fh.write("|Category | Score |\n")
@@ -60,44 +39,47 @@ def write_feedback(path, feedback, student) -> None:
         fh.write(f"{feedback['review']['feedback']}")
 
 def main():
-    # Look at this illerate mess of a driver function
+    # TODO: This driver is a mess
+
+    # Look at this illerate mess of a driver function, ibid.
     agent = Agent(os.getenv("RECONNOITER"))
     assign_name = cliarg.optional.assignment
     org_name = cliarg.required.org
     os.makedirs(
-        "feedback/grade_reports", 
+        "feedback/grade_reports",
         exist_ok = True
     )
     for assign in os.listdir(os.getcwd()):
         # Clean the student's name
         status = "❌"
         student = re.sub(
-            "[&\\-\\.]", 
-            "", 
-            assign.split(assign_name)[-1], 
+            "[&\\-\\.]",
+            "",
+            assign.split(assign_name)[-1],
             1
         )
 
         # Move on to parsing the data and fence out the bad stuff
         if not os.path.isdir(assign):
             continue
-        if cliarg.optional.ignore in assign or assign == "feedback":
+        if cliarg.optional.ignore in assign or assign == "feedback" or assign == "changes":
             continue
-        
+
         # Read relevant files and start to assess
         path = Path(os.getcwd(), assign)
         if not pull_latest_changes(Path(os.getcwd(), assign)):
            print(f"[ERROR] Error pulling from {assign}")
-       
-        grader_file = discover_grader(assign)
+        # TODO: Need to discover _all_ grader files and early exit if only
+        #       running the grader (see activities repos)
+        grader_file = GraderFile.discover(folder = assign)
         os.chdir(path)
-        if run_grader(student, grader_file):
+        if GraderFile.run(student, grader_file):
             status = "✅"
         print(f"{status} {assign}")
         os.chdir(UP)
 
         # Output grader run to read later
-        programming_score = read_grader(
+        programming_score = GraderFile.result(
             f"feedback/grade_reports/{student}_grader.json"
         )
         # Send the summary to the agent to evaluate

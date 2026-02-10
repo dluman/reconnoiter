@@ -14,7 +14,7 @@ dependencies = [
     "gatorgrade",
     "GitPython",
     "requests",
-    "python-dotenv"
+    "python-dotenv",
 ]
 authors = [
     {name = "Douglas Luman", email = "dluman@allegheny.edu"}
