@@ -15,6 +15,7 @@ dependencies = [
     "GitPython",
     "requests",
     "python-dotenv",
+    "chevron>=0.14.0",
 ]
 authors = [
     {name = "Douglas Luman", email = "dluman@allegheny.edu"}

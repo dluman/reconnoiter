@@ -5,11 +5,26 @@ class Python:
 
     def __init__(self, cwd: str = os.getcwd(), python: str = ""):
         environment = self.__find_venv(cwd = cwd)
-        self.binary = f"{environment}/bin/python"
-        self.grader = f"{environment}/bin/gatorgrade"
+        if self.__is_uv():
+            self.binary = ["uv", "run", "--directory", str(cwd), "python"]
+            self.grader = ["uv", "run", "--directory", str(cwd), "gatorgrade"]
+        else:
+            self.binary = [f"{environment}/bin/python"]
+            self.grader = [f"{environment}/bin/gatorgrade"]
         if python:
-            self.binary = python
-            # TODO: allow custom grader
+            self.binary = [python]
+    
+    def __is_uv(self) -> bool:
+        """
+        Docstring for __is_uv
+
+        :param self: Description
+        :return: Description
+        :rtype: bool
+        """
+        if os.path.isfile(os.path.join(os.getcwd(), "uv.lock")):
+            return True
+        return False
 
     def __find_venv(self, cwd: str = "") -> str:
         """
@@ -22,6 +37,7 @@ class Python:
         :return: Description
         :rtype: bool
         """
-        for root, dirs, files in os.walk(cwd):
-            print(root, dirs, files)
+        for root, dirs, _ in os.walk(cwd):
+            if "bin" in dirs:
+                return root
         return ""

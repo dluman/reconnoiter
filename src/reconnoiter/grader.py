@@ -4,6 +4,8 @@ import subprocess
 
 from .env import Python
 
+UP = ".."
+
 class GraderFile:
 
     @staticmethod
@@ -16,18 +18,19 @@ class GraderFile:
         # TODO: Use os.walk to discover sub-graders
         for file in os.listdir(folder):
             if file in defaults + grader_files:
-                return os.path.join(os.getcwd(), file)
+                return os.path.join(folder, file)
 
     @staticmethod
     def run(student, path, grader_file: str = "gatorgrade.yml") -> bool:
-        interpreter = Python()
+        interpreter = Python(cwd = path)
+        os.chdir(path)
         result = subprocess.run(
-            [interpreter.grader,
-            "--config", grader_file,
+            interpreter.grader + ["--config", grader_file,
             "--report", "file", "json",
             f"../feedback/grade_reports/{student}_grader.json"],
             stdout = subprocess.DEVNULL
         )
+        os.chdir(UP)
         if result.returncode > 0:
             return False
         return True

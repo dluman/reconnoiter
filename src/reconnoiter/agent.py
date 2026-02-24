@@ -7,13 +7,17 @@ from pathlib import Path
 
 class Agent:
 
+    MODULE_PATH = Path(__file__).parent.resolve()
+
     def __init__(self, key: str = None):
         self.client = Anthropic(api_key = key)
         self.prompt = self.__prompt()
 
-    def __prompt(self) -> str:
+    def __prompt(self, prompt: str = "") -> str:
         try:
-            with open(".rubric", "r") as fh:
+            if not prompt:
+                prompt = f"{self.MODULE_PATH}/templates/rubric.prompt"
+            with open(prompt, "r") as fh:
                 return fh.read()
         except FileNotFoundError:
             print("[ERROR] Cannot file rubric file; won't process writing.")
